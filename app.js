@@ -37,11 +37,11 @@ io.on('connection', (uniquesocket) => { // Listen for new socket connections
     uniquesocket.on('disconnect', () => {
         let disconnectedRole = null;
         if (players.white === uniquesocket.id) {
-            disconnectedRole = 'w';
+            disconnectedRole = 'White';
             delete players.white; // Remove the disconnected player from the players object
         }
         else if (players.black === uniquesocket.id) {
-            disconnectedRole = 'b';
+            disconnectedRole = 'Black';
             delete players.black; // Remove the disconnected player from the players object
         }
         if (disconnectedRole) {
