@@ -156,16 +156,29 @@ const showGameOver = (message) => {
     overlay.style.fontSize = "2rem";
     overlay.style.zIndex = "1000";
 
+    let timeLeft = 10;
+
     overlay.innerHTML = `
         <div>${message}</div>
-        <div style="font-size: 1rem; margin-top: 10px;">
-            New game starting in 10 seconds...
+        <div id="countdown" style="font-size: 1rem; margin-top: 10px;">
+            New game starting in ${timeLeft} seconds...
         </div>
     `;
 
     document.body.appendChild(overlay);
 
-    // Remove after 10 seconds
+    const countdownElement = document.getElementById("countdown");
+
+    const interval = setInterval(() => {
+        timeLeft--;
+        countdownElement.textContent = `New game starting in ${timeLeft} seconds...`;
+
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+        }
+    }, 1000);
+
+    // Remove overlay after 10 sec
     setTimeout(() => {
         overlay.remove();
     }, 10000);
