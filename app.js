@@ -15,8 +15,6 @@ let currentPlayer = "w"; // Track the current player (White or Black)
 
 app.set('view engine', 'ejs'); // Set the view engine to EJS
 app.use(express.static('public')); // Serve static files from the 'public' directory
-app.use("/socket.io", express.static("node_modules/socket.io/client-dist")); // Serve the socket.io client library from the node_modules directory
-
 app.get('/', (req, res) => {
     res.render('index'); // Render the 'index' view when the root route is accessed
 });
