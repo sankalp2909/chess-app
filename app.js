@@ -1,7 +1,7 @@
 const express = require('express');
 const socket = require('socket.io');
 const http = require('http');
-const {Chess} = require("chess.js")
+const { Chess } = require("chess.js")
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,69 +21,70 @@ app.get('/', (req, res) => {
 
 io.on('connection', (uniquesocket) => { // Listen for new socket connections
     console.log('A user connected: ' + uniquesocket.id);
-    uniquesocket.emit("boardState", chess.fen());
-    if(!players.white)
-    {
+    uniquesocket.emit("boardState", chess.fen()); // Send the current board state to the newly connected client
+    if (!players.white) {
         players.white = uniquesocket.id; // Assign the connected socket as the White player
         uniquesocket.emit('playerRole', 'w'); // Notify the player of their color
     }
-    else if(!players.black)
-    {
+    else if (!players.black) {
         players.black = uniquesocket.id; // Assign the connected socket as the Black player
         uniquesocket.emit('playerRole', 'b'); // Notify the player of their color
     }
-    else
-    {
+    else {
         uniquesocket.emit('spectator'); // Notify the player that they are a spectator
     }
 
-    uniquesocket.on('disconnect', ()=>{
-        if(uniquesocket.id === players.white)
-        {
-            delete(players.white); // Remove the White player from the players object
+    uniquesocket.on('disconnect', () => {
+        let disconnectedRole = null;
+        if (players.white === uniquesocket.id) {
+            disconnectedRole = 'w';
+            delete players.white; // Remove the disconnected player from the players object
         }
-        else if(uniquesocket.id === players.black)
-        {
-            delete(players.black); // Remove the Black player from the players object
+        else if (players.black === uniquesocket.id) {
+            disconnectedRole = 'b';
+            delete players.black; // Remove the disconnected player from the players object
+        }
+        if (disconnectedRole) {
+            const winner = disconnectedRole === 'White' ? 'Black' : 'White';
+            io.emit("gameOverDisconnected", winner);
+
+            setTimeout(() => {
+                chess.reset();
+                io.emit("boardState", chess.fen());
+            }, 10000);
         }
     })
-    uniquesocket.on("move", (move)=>{
-        try{
-            if((chess.turn() === 'w' && uniquesocket.id !== players.white) || (chess.turn() === 'b' && uniquesocket.id !== players.black))
-            {
+    uniquesocket.on("move", (move) => {
+        try {
+            if ((chess.turn() === 'w' && uniquesocket.id !== players.white) || (chess.turn() === 'b' && uniquesocket.id !== players.black)) {
                 return; // Ignore the move if it's not the player's turn
             }
             const result = chess.move(move); // Attempt to make the move in the chess game
-            if(result)
-            {
+            if (result) {
                 currentPlayer = chess.turn(); // Update the current player after a successful move
                 io.emit("move", move); // Broadcast the move to all connected clients
                 io.emit("boardState", chess.fen()); // Broadcast the updated board state to all connected clients
-                
-                if(chess.isGameOver())
-                {   let winner = null;
-                    if(chess.isCheckmate())
-                    {
+
+                if (chess.isGameOver()) {
+                    let winner = null;
+                    if (chess.isCheckmate()) {
                         winner = currentPlayer === 'w' ? 'Black' : 'White'; // Determine the winner based on the current player
                     }
                     else
                         winner = "Draw"; // If the game is not a checkmate, it's a draw
                     io.emit("gameOver", winner); // Broadcast the game over event with the winner information
-                    setTimeout(()=>{
+                    setTimeout(() => {
                         chess.reset(); // Reset the chess game after a short delay
                         io.emit("boardState", chess.fen());
                     }, 10000) // Reset the game after 10 seconds
                 }
             }
-            else
-            {
+            else {
                 console.log("Error, Invalid move: ", move);
                 uniquesocket.emit("invalidMove", move); // Notify the player of an invalid move
-
             }
         }
-        catch(e)
-        {
+        catch (e) {
             console.log(e);
             uniquesocket.emit("Invalid Move", move);
         }
