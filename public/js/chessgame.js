@@ -114,3 +114,47 @@ socket.on('move', (move) => {
     chess.move(move); // Make the move in the chess game
     renderBoard(); // Re-render the board with the updated state
 })
+
+socket.on("gameOver", (winner) => {
+    let message = "";
+
+    if (winner === "Draw") {
+        message = "Game Draw!";
+    } else {
+        message = winner + " Wins!";
+    }
+
+    showGameOver(message);
+});
+
+const showGameOver = (message) => {
+    let overlay = document.createElement("div");
+
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.8)";
+    overlay.style.color = "white";
+    overlay.style.display = "flex";
+    overlay.style.flexDirection = "column";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.fontSize = "2rem";
+    overlay.style.zIndex = "1000";
+
+    overlay.innerHTML = `
+        <div>${message}</div>
+        <div style="font-size: 1rem; margin-top: 10px;">
+            New game starting in 10 seconds...
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Remove after 10 seconds
+    setTimeout(() => {
+        overlay.remove();
+    }, 10000);
+};

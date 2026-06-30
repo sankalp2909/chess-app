@@ -59,6 +59,21 @@ io.on('connection', (uniquesocket) => { // Listen for new socket connections
                 currentPlayer = chess.turn(); // Update the current player after a successful move
                 io.emit("move", move); // Broadcast the move to all connected clients
                 io.emit("boardState", chess.fen()); // Broadcast the updated board state to all connected clients
+                
+                if(chess.isGameOver())
+                {   let winner = null;
+                    if(chess.isCheckmate())
+                    {
+                        winner = currentPlayer === 'w' ? 'Black' : 'White'; // Determine the winner based on the current player
+                    }
+                    else
+                        winner = "Draw"; // If the game is not a checkmate, it's a draw
+                    io.emit("gameOver", winner); // Broadcast the game over event with the winner information
+                    setTimeout(()=>{
+                        chess.reset(); // Reset the chess game after a short delay
+                        io.emit("boardState", chess.fen());
+                    }, 10000) // Reset the game after 10 seconds
+                }
             }
             else
             {
