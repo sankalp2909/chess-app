@@ -1,4 +1,4 @@
-const socket = io(); // Initialize a new socket.io client instance
+const socket = io(window.location.origin); // Initialize a new socket.io client instance
 //socket.emit means that the client is sending a message to the server. In this case, it is emitting a custom event called "churan" to the server. The server listens for this event and can respond accordingly.
 //And socket.on means that the client is listening for a specific event from the server. In this case, it is listening for the "churan papdi" event. When the server emits this event, the client will execute the provided callback function and log the received message to the console.
 

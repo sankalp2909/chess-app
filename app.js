@@ -4,7 +4,7 @@ const http = require('http');
 const {Chess} = require("chess.js")
 
 const app = express();
-
+const PORT = process.env.PORT || 3000;
 const server = http.createServer(app); // Create an HTTP server using the Express app
 const io = socket(server); // Create a new socket.io instance and attach it to the HTTP server
 
@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
 
 io.on('connection', (uniquesocket) => { // Listen for new socket connections
     console.log('A user connected: ' + uniquesocket.id);
+    uniquesocket.emit("boardState", chess.fen());
     if(!players.white)
     {
         players.white = uniquesocket.id; // Assign the connected socket as the White player
@@ -75,6 +76,6 @@ io.on('connection', (uniquesocket) => { // Listen for new socket connections
     })
 });
 
-server.listen(3000, () => {
-    console.log('Server is running on port 3000');
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 })
